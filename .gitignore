@@ -1,0 +1,10 @@
+
+/TestResults
+*/obj
+*/bin
+bin
+*.suo
+*.user
+*.vs10x
+*.docstates
+*.ReSharper
