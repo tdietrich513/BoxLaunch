@@ -8,3 +8,4 @@ bin
 *.vs10x
 *.docstates
 *.ReSharper
+_Resharper*
