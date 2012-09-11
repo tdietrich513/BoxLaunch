@@ -11,75 +11,95 @@
 		private const decimal BytesToMegaBytes = 1048506M;
 		private const decimal BytesToKiloBytes = 1024M;
 
-		static void Main(string[] args)
+		private static bool ArgsAreValid(string[] args)
 		{
 			if (args.Contains("-help") || args.Count() == 0)
 			{
 				PrintHelp();
-				return;
+				return false;
 			}
 
 			if (args.Count() < 3)
 			{
 				Console.WriteLine("ERROR: Must provide source, target, and executable arguments!");
 				PrintHelp();
-				return;
+				return false;
 			}
 
-			var sourcePath = args[0];
-			var targetPath = args[1];
-			var executableName = args[2];			
+			return true;
+		}
 
-			if (!sourcePath.EndsWith("\\")) sourcePath += "\\";
-			if (!targetPath.EndsWith("\\")) targetPath += "\\";
-			
-
+		private static bool PathsAreValid(string sourcePath, string targetPath)
+		{
 			if (!Directory.Exists(sourcePath))
 			{
 				Console.WriteLine("ERROR: Source directory ({0}) does not exist!", sourcePath);
-				return;
+				return false;
 			}
 
-			if (!Directory.Exists(targetPath))
+			if (Directory.Exists(targetPath)) return true;
+
+			//Directory does not exist, must be created to precede. 
+			
+			try
 			{
-				try
-				{
-					Console.WriteLine("Target Directory not found, creating directory...");
-					Directory.CreateDirectory(targetPath);
-				}
-				catch
-				{
-					Console.WriteLine("ERROR: Could not create target directory!/r/nMake sure you have write rights to {0} and try again.", targetPath);
-					return;
+				Console.WriteLine("Target Directory not found, creating directory...");
+				Directory.CreateDirectory(targetPath);
+				return true;
+			}
+			catch
+			{
+				Console.WriteLine(
+					"ERROR: Could not create target directory!/r/nMake sure you have write rights to {0} and try again.", targetPath);
+				return false;
+			}
+		}
+
+		private static List<UpdateItem> GetUpdates(string sourcePath, string targetPath)
+		{
+			var sourceDir = new DirectoryInfo(sourcePath);
+			var targetDir = new DirectoryInfo(targetPath);
+
+			if (targetDir.GetFiles().Count() > 0) Console.WriteLine("Checking for updates...");			
+
+			var updates = new List<UpdateItem>();
+			foreach (var sourceFile in sourceDir.GetFiles())
+			{
+				var targetFile = new FileInfo(targetPath + "\\" + sourceFile.Name);
+
+				if (!targetFile.Exists || sourceFile.LastWriteTime != targetFile.LastWriteTime)
+				{					
+					updates.Add(new UpdateItem { Source = sourceFile, Target = targetFile, FileSize = sourceFile.Length });
 				}
 			}
+			return updates;
+		}
+
+		static void Main(string[] args)
+		{
+			if (!ArgsAreValid(args)) return;
+
+			var sourcePath = args[0];
+			var targetPath = args[1];
+			var executableName = args[2];
+			string arguments = string.Empty;
+			if (args.Length > 3) arguments = args[3];
+
+			if (!sourcePath.EndsWith("\\")) sourcePath += "\\";
+			if (!targetPath.EndsWith("\\")) targetPath += "\\";
+			if (!PathsAreValid(sourcePath, targetPath)) return;
 
 			if (!File.Exists(sourcePath + executableName))
 			{
 				Console.WriteLine("ERROR: Executable ({0}) does not exist in source directory!", executableName);
 				return;
 			}
-
-			var sourceDir = new DirectoryInfo(sourcePath);
-			var targetDir = new DirectoryInfo(targetPath);
-
-			var updates = new List<UpdateItem>();
-			var updateSize = 0M;
+																
+			var updates = GetUpdates(sourcePath, targetPath);
+			var updateSize = updates.Sum(x => x.FileSize);
+			
 			var completed = 0M;			
-
-			if (targetDir.GetFiles().Count() > 0) Console.WriteLine("Checking for updates...");
-
-			foreach (var sourceFile in sourceDir.GetFiles())
-			{
-				var targetFile = new FileInfo(targetPath + "\\" + sourceFile.Name);
-
-				if (!targetFile.Exists || sourceFile.LastWriteTime != targetFile.LastWriteTime)
-				{
-					updateSize += sourceFile.Length;
-					updates.Add(new UpdateItem { Source = sourceFile, Target = targetFile });
-				}
-			}
-
+			
 			var startTime = DateTime.Now;
 			var failure = false;
 			if (updateSize > 0M)
@@ -147,9 +167,9 @@
 			}
 			
 			var executableLocation = "\"" + targetPath + executableName + "\"";
-			Console.WriteLine("Launching Program...");			
-			Process.Start(executableLocation);
-
+			Console.WriteLine("Launching Program...");
+			var psi = new ProcessStartInfo { FileName = executableLocation, Arguments = arguments };
+			Process.Start(psi);
 		}
 
 		private static string SpaceRight(string forText)
@@ -170,7 +190,7 @@
 		private static void PrintHelp()
 		{
 			Console.WriteLine("SYNTAX");
-			Console.WriteLine("\t BoxLaunch <source> <target> <executable>");
+			Console.WriteLine("\t BoxLaunch <source> <target> <executable> <arguments>");
 		}
 
 		private static string ProgressText(decimal progressPct, decimal completed, decimal updateSize)
@@ -189,6 +209,7 @@
 	{
 		public FileInfo Source { get; set; }
 		public FileInfo Target { get; set; }
+		public decimal FileSize { get; set; }
 	}
 
 	public static class Utils
