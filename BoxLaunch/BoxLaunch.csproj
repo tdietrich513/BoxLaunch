@@ -58,9 +58,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GetFolderContentsQuery.cs" />
+    <Compile Include="HashCommand.cs" />
+    <Compile Include="HashDirectoryAction.cs" />
+    <Compile Include="HashFileAction.cs" />
+    <Compile Include="ICommand.cs" />
+    <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="ProgressReportingFileCopier.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RunExecutableAction.cs" />
+    <Compile Include="SyncAndRunCommand.cs" />
+    <Compile Include="SyncCommand.cs" />
+    <Compile Include="SyncDirectoriesAction.cs" />
     <Compile Include="UpdateItem.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
