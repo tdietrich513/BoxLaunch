@@ -13,6 +13,7 @@ namespace BoxLaunch
         {
             var fileInfo = new FileInfo(FileName);
             var dirInfo = fileInfo.Directory;
+            if (dirInfo == null) return false;
 
             var tempFile = Path.GetTempFileName();
             var hasher = MD5.Create();

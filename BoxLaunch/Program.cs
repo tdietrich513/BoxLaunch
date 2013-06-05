@@ -16,7 +16,8 @@ namespace BoxLaunch
                               {
                                   { "sync-and-run", () => new SyncAndRunCommand() },
                                   { "sync", () => new SyncCommand() },
-                                  { "hash", () => new HashCommand() }
+                                  { "hash", () => new HashCommand() },
+                                  { "copy-and-run", () => new CopyAndRunCommand() }
                               };
 
 

@@ -58,6 +58,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CopyAndRunCommand.cs" />
+    <Compile Include="CopyFileAction.cs" />
     <Compile Include="GetFolderContentsQuery.cs" />
     <Compile Include="HashCommand.cs" />
     <Compile Include="HashDirectoryAction.cs" />
