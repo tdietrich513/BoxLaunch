@@ -48,7 +48,18 @@ namespace BoxLaunch
 
             if (!SubCommands.ContainsKey(extra[0]))
             {
-                Console.WriteLine("{0} is not a recognized command. See 'BoxLaunch help' for usage.", extra[0]);
+                var defaultCommand = new SyncAndRunCommand();
+                var translatedArgs = new List<string>()
+                                         {
+                                             "sync-and-run",
+                                             "-s=" + args[0],
+                                             "-t=" + args[1],
+                                             "-p=" + args[2]
+                                         };
+                if (args.Count() > 3)
+                    translatedArgs.AddRange(args.Skip(3).Select(a => "-a=" + a));
+
+                defaultCommand.Run(translatedArgs);
                 return;
             }
             

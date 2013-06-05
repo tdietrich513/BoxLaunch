@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -55,8 +56,84 @@ namespace BoxLaunch
 
         private List<UpdateItem> GetUpdates()
         {
-            if (TargetDir.GetFiles().Any()) Console.WriteLine("Checking for updates...");
+            if (TargetDir.GetFiles().Any()) Console.WriteLine("Checking for changes...");
 
+            // if we've got a hash file in both target and source, use that to compute update.
+            if (File.Exists(SourcePath + "\\.blhash") && File.Exists(TargetPath + "\\.blhash")) return UpdatesFromHash();
+
+            // fall back to comparing file dates.
+            return UpdatesFromDates();
+        }
+
+        private List<UpdateItem> UpdatesFromHash()
+        {
+            var sourceHashFi = new FileInfo(SourcePath + "\\.blhash");
+            var targetHashFi = new FileInfo(TargetPath + "\\.blhash");
+            var hashRx = new Regex(@"^(?<file>[^:]+):\s(?<hash>.+)$");
+
+            string[] sourceLines;
+            using (var sr = new StreamReader(sourceHashFi.FullName))
+            {
+                var contents = sr.ReadToEnd();
+                sourceLines = contents.Split('\n');
+            }
+
+            string[] targetLines;
+            using (var sr = new StreamReader(targetHashFi.FullName))
+            {
+                var contents = sr.ReadToEnd();
+                targetLines = contents.Split('\n');
+            }
+
+            var sourceHashes = sourceLines.ToDictionary(
+                line => hashRx.Match(line).Groups["file"].Value, 
+                line => hashRx.Match(line).Groups["hash"].Value);
+            
+            var targetHashes = targetLines.ToDictionary(
+                line => hashRx.Match(line).Groups["file"].Value, 
+                line => hashRx.Match(line).Groups["hash"].Value);
+
+            var updates = new List<UpdateItem>();
+            
+            var buildUpdateItem = new Func<string, UpdateItem>(
+                fileName => {
+                    var source = new FileInfo(SourcePath + "\\" + fileName);
+                    return new UpdateItem
+                               {
+                                   Source = source,
+                                   Target = new FileInfo(TargetPath + "\\" + fileName),
+                                   FileSize = source.Length
+                               };
+                });
+
+            foreach (var sourceHash in sourceHashes)
+            {
+                if (!targetHashes.ContainsKey(sourceHash.Key))
+                {
+                    // Target does not have a hash.
+                    updates.Add(buildUpdateItem(sourceHash.Key));
+                    continue;
+                }
+                if (sourceHash.Value != targetHashes[sourceHash.Key])
+                {
+                    // Hashes do not match.
+                    updates.Add(buildUpdateItem(sourceHash.Key));
+                    continue;
+                }
+                if (!File.Exists(TargetPath + "\\" + sourceHash.Key))
+                {
+                    // Target is missing a file.
+                    updates.Add(buildUpdateItem(sourceHash.Key));
+                    continue;
+                }
+            }
+            // If we've got any updates at all, we should also re-download the hash.
+            if (updates.Count > 0) updates.Add(buildUpdateItem(".blhash"));
+            return updates;
+        }        
+
+        private List<UpdateItem> UpdatesFromDates()
+        {
             var folderContentsQuery = new GetFolderContentsQuery { Folder = SourceDir };
 
             var updates = new List<UpdateItem>();
@@ -71,7 +148,7 @@ namespace BoxLaunch
             }
             return updates;
         }
-       
+
         private static Dictionary<int, List<UpdateItem>> SplitUpdates(int splitCount, IEnumerable<UpdateItem> updates)
         {
             var splitUpdates = new Dictionary<int, List<UpdateItem>>(splitCount);
@@ -130,7 +207,7 @@ namespace BoxLaunch
 
             if (_updateSize == 0M)
             {
-                Console.WriteLine("Program is up to date...");
+                Console.WriteLine("Target is up to date...");
                 return true;
             }
 
