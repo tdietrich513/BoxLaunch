@@ -19,7 +19,7 @@ namespace BoxLaunch
             var files = query.Execute().Where(fi => fi.Name != ".blhash").ToList();
             Console.WriteLine("Found {0} file(s)", files.Count);
 
-            var hfInfo = new FileInfo(HashPath + "\\" + ".blhash");                        
+            var hfInfo = new FileInfo(HashPath + ".blhash");                        
             
             var tempFile = Path.GetTempFileName();
 
@@ -45,7 +45,7 @@ namespace BoxLaunch
             using (var sr = new StreamWriter(tempFile))
             {
                 foreach (var kvp in hashResults.OrderBy(kvp => kvp.Key)) {                
-                    sr.Write(string.Format("{0}: {1}\n", kvp.Key, kvp.Value));                    
+                    sr.Write(string.Format("{0}: {1}{2}", kvp.Key, kvp.Value, Environment.NewLine ));                    
                 }                
             }
             Console.WriteLine("Done! ({0} s)", (DateTime.Now - processStart).TotalSeconds);

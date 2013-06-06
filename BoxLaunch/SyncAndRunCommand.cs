@@ -17,8 +17,8 @@ namespace BoxLaunch
             ExecutableArgs = new List<string>();
 
             var p = new OptionSet {                
-                { "s|source=", "The {SOURCE DIRECTORY} that contains the files to be copied.", v => SourcePath = v},
-                { "t|target=", "The {TARGET DIRECTORY} that the files should be copied to.", v => TargetPath = v},
+                { "s|source=", "The {SOURCE DIRECTORY} that contains the files to be copied.", v => SourcePath = v.EndsWith("\\") ? v : v + "\\"},
+                { "t|target=", "The {TARGET DIRECTORY} that the files should be copied to.", v => TargetPath = v.EndsWith("\\") ? v : v + "\\"},
                 { "p|program=", "The {PROGRAM} to run once the directories are in sync.", v => ExecutableName = v},
                 { "a|arg=", "An {ARGUMENT} that should be passed to the executable.", ExecutableArgs.Add}
             };

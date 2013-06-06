@@ -13,13 +13,13 @@ namespace BoxLaunch
    
         public bool Execute()
         {
-            if (!File.Exists(TargetPath + "\\" + ExecutableName))
+            if (!File.Exists(TargetPath + ExecutableName))
             {
                 Console.WriteLine("ERROR: Executable ({0}) does not exist in target directory!", ExecutableName);
                 return false;
             }
 
-            var executableLocation = "\"" + TargetPath + "\\" + ExecutableName + "\"";
+            var executableLocation = "\"" + TargetPath + ExecutableName + "\"";
             Console.WriteLine("Launching Program...");
             var psi = new ProcessStartInfo { FileName = executableLocation, Arguments = string.Join(" ", ExecutableArgs) };
             Process.Start(psi);

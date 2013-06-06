@@ -14,7 +14,7 @@ namespace BoxLaunch
         {            
             var p = new OptionSet {                                
                 { "p|program=", "The {PROGRAM} to run once the directories are in sync.", v => SourceFile = v},                
-                { "t|target=", "The {TARGET DIRECTORY} that the files should be copied to.", v => TargetPath = v}                
+                { "t|target=", "The {TARGET DIRECTORY} that the files should be copied to.", v => TargetPath = v.EndsWith("\\") ? v : v + "\\"}                
             };
 
             var extra = Parse(

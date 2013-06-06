@@ -40,11 +40,11 @@ namespace BoxLaunch
         private List<UpdateItem> ForceUpdates()
         {            
             var updates = new List<UpdateItem>();
-            updates.Add(new UpdateItem() {Source = SourceFileInfo, Target = new FileInfo(TargetPath + "\\" + SourceFileInfo.Name), FileSize = SourceFileInfo.Length});
+            updates.Add(new UpdateItem() {Source = SourceFileInfo, Target = new FileInfo(TargetPath + SourceFileInfo.Name), FileSize = SourceFileInfo.Length});
             if (File.Exists(SourceDir.FullName + "\\.blhash"))
             {
                 var sourceHashFi = new FileInfo(SourceFileInfo.Directory.FullName + "\\.blhash");
-                var targetHashFi = new FileInfo(TargetPath + "\\.blhash");
+                var targetHashFi = new FileInfo(TargetPath + ".blhash");
                 updates.Add(new UpdateItem { Source = sourceHashFi, Target = targetHashFi, FileSize = sourceHashFi.Length});
             }
             return updates;
@@ -53,21 +53,21 @@ namespace BoxLaunch
         private List<UpdateItem> UpdatesFromHash()
         {
             var sourceHashFi = new FileInfo(SourceDir.FullName + "\\.blhash");
-            var targetHashFi = new FileInfo(TargetPath + "\\.blhash");
-            var hashRx = new Regex(@"^(?<file>[^:]+):\s(?<hash>.+)$");
+            var targetHashFi = new FileInfo(TargetPath + ".blhash");
+            var hashRx = new Regex(@"(?<file>[^:]+):\s(?<hash>.+)");
 
             string[] sourceLines;
             using (var sr = new StreamReader(sourceHashFi.FullName))
             {
                 var contents = sr.ReadToEnd();
-                sourceLines = contents.Split('\n');
-            }
+                sourceLines = contents.Split(Environment.NewLine.ToArray(), StringSplitOptions.RemoveEmptyEntries);
+            }            
 
             string[] targetLines;
             using (var sr = new StreamReader(targetHashFi.FullName))
             {
                 var contents = sr.ReadToEnd();
-                targetLines = contents.Split('\n');
+                targetLines = contents.Split(Environment.NewLine.ToArray(), StringSplitOptions.RemoveEmptyEntries);
             }
 
             var sourceHashes = sourceLines.ToDictionary(
@@ -87,7 +87,7 @@ namespace BoxLaunch
                     return new UpdateItem
                     {
                         Source = source,
-                        Target = new FileInfo(TargetPath + "\\" + fileName),
+                        Target = new FileInfo(TargetPath + fileName),
                         FileSize = source.Length
                     };
                 });
@@ -107,7 +107,7 @@ namespace BoxLaunch
                 updates.Add(buildUpdateItem(".blhash"));
                 return updates;
             }
-            if (!File.Exists(TargetPath + "\\" + SourceFileInfo.Name))
+            if (!File.Exists(TargetPath + SourceFileInfo.Name))
             {
                 // Target is missing a file.
                 updates.Add(buildUpdateItem(".blhash"));
@@ -167,9 +167,7 @@ namespace BoxLaunch
         }
 
         public bool Execute()
-        {
-            if (!TargetPath.EndsWith("\\")) TargetPath += "\\";
-
+        {            
             SourceFileInfo = new FileInfo(SourceFile);
             SourceDir = SourceFileInfo.Directory;
             TargetDir = new DirectoryInfo(TargetPath);

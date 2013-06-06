@@ -22,7 +22,7 @@ namespace BoxLaunch
                     ignoreData = sr.ReadToEnd();
                 }
 
-                foreach (var ignorePattern in ignoreData.Split('\n'))
+                foreach (var ignorePattern in ignoreData.Split(Environment.NewLine.ToArray(), StringSplitOptions.RemoveEmptyEntries))
                 {
                     var filesThatAreIgnored = Folder.GetFiles(ignorePattern);
                     if (filesThatAreIgnored.Length > 0)

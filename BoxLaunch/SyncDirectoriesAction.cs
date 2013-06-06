@@ -26,10 +26,7 @@ namespace BoxLaunch
         public DirectoryInfo TargetDir { get; set; }
 
         private bool PathsAreValid()
-        {
-            if (!SourcePath.EndsWith("\\")) SourcePath += "\\";
-            if (!TargetPath.EndsWith("\\")) TargetPath += "\\";
-
+        {            
             if (!Directory.Exists(SourcePath))
             {
                 Console.WriteLine("ERROR: Source directory ({0}) does not exist!", SourcePath);
@@ -59,7 +56,7 @@ namespace BoxLaunch
             if (TargetDir.GetFiles().Any()) Console.WriteLine("Checking for changes...");
 
             // if we've got a hash file in both target and source, use that to compute update.
-            if (File.Exists(SourcePath + "\\.blhash") && File.Exists(TargetPath + "\\.blhash")) return UpdatesFromHash();
+            if (File.Exists(SourcePath + ".blhash") && File.Exists(TargetPath + ".blhash")) return UpdatesFromHash();
 
             // fall back to comparing file dates.
             return UpdatesFromDates();
@@ -67,22 +64,22 @@ namespace BoxLaunch
 
         private List<UpdateItem> UpdatesFromHash()
         {
-            var sourceHashFi = new FileInfo(SourcePath + "\\.blhash");
-            var targetHashFi = new FileInfo(TargetPath + "\\.blhash");
+            var sourceHashFi = new FileInfo(SourcePath + ".blhash");
+            var targetHashFi = new FileInfo(TargetPath + ".blhash");
             var hashRx = new Regex(@"^(?<file>[^:]+):\s(?<hash>.+)$");
 
             string[] sourceLines;
             using (var sr = new StreamReader(sourceHashFi.FullName))
             {
                 var contents = sr.ReadToEnd();
-                sourceLines = contents.Split('\n');
+                sourceLines = contents.Split(Environment.NewLine.ToArray(), StringSplitOptions.RemoveEmptyEntries);
             }
 
             string[] targetLines;
             using (var sr = new StreamReader(targetHashFi.FullName))
             {
                 var contents = sr.ReadToEnd();
-                targetLines = contents.Split('\n');
+                targetLines = contents.Split(Environment.NewLine.ToArray(), StringSplitOptions.RemoveEmptyEntries);
             }
 
             var sourceHashes = sourceLines.ToDictionary(
@@ -97,17 +94,18 @@ namespace BoxLaunch
             
             var buildUpdateItem = new Func<string, UpdateItem>(
                 fileName => {
-                    var source = new FileInfo(SourcePath + "\\" + fileName);
+                    var source = new FileInfo(SourcePath + fileName);
                     return new UpdateItem
                                {
                                    Source = source,
-                                   Target = new FileInfo(TargetPath + "\\" + fileName),
+                                   Target = new FileInfo(TargetPath + fileName),
                                    FileSize = source.Length
                                };
                 });
 
             foreach (var sourceHash in sourceHashes)
             {
+                if (string.IsNullOrEmpty(sourceHash.Key)) continue;
                 if (!targetHashes.ContainsKey(sourceHash.Key))
                 {
                     // Target does not have a hash.
@@ -120,7 +118,7 @@ namespace BoxLaunch
                     updates.Add(buildUpdateItem(sourceHash.Key));
                     continue;
                 }
-                if (!File.Exists(TargetPath + "\\" + sourceHash.Key))
+                if (!File.Exists(TargetPath + sourceHash.Key))
                 {
                     // Target is missing a file.
                     updates.Add(buildUpdateItem(sourceHash.Key));
@@ -139,7 +137,7 @@ namespace BoxLaunch
             var updates = new List<UpdateItem>();
             foreach (var sourceFile in folderContentsQuery.Execute())
             {
-                var targetFile = new FileInfo(TargetPath + "\\" + sourceFile.Name);
+                var targetFile = new FileInfo(TargetPath + sourceFile.Name);
 
                 if (!targetFile.Exists || sourceFile.LastWriteTime != targetFile.LastWriteTime)
                 {

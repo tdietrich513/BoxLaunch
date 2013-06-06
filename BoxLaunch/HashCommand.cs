@@ -12,7 +12,7 @@ namespace BoxLaunch
         public override void Run(IEnumerable<string> args)
         {
             var p = new OptionSet {
-                                      { "d|directory=", "The {DIRECTORY} that needs to be hashed.", v => Path = v },
+                                      { "d|directory=", "The {DIRECTORY} that needs to be hashed.", v => Path = v.EndsWith("\\") ? v : v + "\\" },
                                       { "f|file=", "A {FILE} to hash.", v => File = v}
                                   };
 

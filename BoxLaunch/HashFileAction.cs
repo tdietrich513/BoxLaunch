@@ -32,7 +32,7 @@ namespace BoxLaunch
                 {
                     sw.Write(
                         line.StartsWith(fileInfo.Name) 
-                            ? string.Format("{0}: {1}\n", fileInfo.Name, hash) 
+                            ? string.Format("{0}: {1}{2}", fileInfo.Name, hash, Environment.NewLine) 
                             : line
                     );
                 }                

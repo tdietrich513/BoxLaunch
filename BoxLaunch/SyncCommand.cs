@@ -12,8 +12,8 @@ namespace BoxLaunch
         public override void Run(IEnumerable<string> args)
         {            
             var p = new OptionSet {                
-                                      { "s|source=", "The {SOURCE DIRECTORY} that contains the files to be copied.", v => SourcePath = v},
-                                      { "t|target=", "The {TARGET DIRECTORY} that the files should be copied to.", v => TargetPath = v}                
+                                      { "s|source=", "The {SOURCE DIRECTORY} that contains the files to be copied.", v => SourcePath = v.EndsWith("\\") ? v : v + "\\"},
+                                      { "t|target=", "The {TARGET DIRECTORY} that the files should be copied to.", v => TargetPath = v.EndsWith("\\") ? v : v + "\\"}                
                                   };
 
             var extra = Parse(
