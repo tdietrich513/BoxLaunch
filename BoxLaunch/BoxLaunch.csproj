@@ -60,10 +60,10 @@
   <ItemGroup>
     <Compile Include="CopyAndRunCommand.cs" />
     <Compile Include="CopyFileAction.cs" />
+    <Compile Include="FileHash.cs" />
     <Compile Include="GetFolderContentsQuery.cs" />
+    <Compile Include="HashCache.cs" />
     <Compile Include="HashCommand.cs" />
-    <Compile Include="HashDirectoryAction.cs" />
-    <Compile Include="HashFileAction.cs" />
     <Compile Include="ICommand.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
@@ -72,7 +72,6 @@
     <Compile Include="SyncAndRunCommand.cs" />
     <Compile Include="SyncCommand.cs" />
     <Compile Include="SyncDirectoriesAction.cs" />
-    <Compile Include="UpdateHashFileAction.cs" />
     <Compile Include="UpdateItem.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>

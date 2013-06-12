@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 
 using NDesk.Options;
 
@@ -22,13 +23,16 @@ namespace BoxLaunch
 
             if (Path != null)
             {
-                var hashDirectoryAction = new HashDirectoryAction { HashPath = Path };
-                hashDirectoryAction.Execute();
+                var hashCache = new HashCache(new FileInfo(Path + "\\.blhash"));
+                hashCache.Create();
+                hashCache.Save();
                 return;
             }
 
-            var hashFileAction = new HashFileAction { FileName = File };
-            hashFileAction.Execute();
+            var fileInfo = new FileInfo(File);
+            var hashcache = new HashCache( new FileInfo(fileInfo.DirectoryName + "\\.blhash"));
+            hashcache.Create(fileInfo.Name);
+            hashcache.Save();
         }
     }
 }

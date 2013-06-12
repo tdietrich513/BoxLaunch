@@ -12,7 +12,7 @@ namespace BoxLaunch
     {
         private const decimal BytesToMegaBytes = 1048506M;
         private const decimal BytesToKiloBytes = 1024M;
-        
+
         private const int ProgressLine = 1;
         private const int ThreadsStartAt = 3;
 
@@ -26,7 +26,7 @@ namespace BoxLaunch
         public DirectoryInfo TargetDir { get; set; }
 
         private bool PathsAreValid()
-        {            
+        {
             if (!Directory.Exists(SourcePath))
             {
                 Console.WriteLine("ERROR: Source directory ({0}) does not exist!", SourcePath);
@@ -56,7 +56,7 @@ namespace BoxLaunch
             if (TargetDir.GetFiles().Any()) Console.WriteLine("Checking for changes...");
 
             // if we've got a hash file in both target and source, use that to compute update.
-            if (File.Exists(SourcePath + ".blhash") && File.Exists(TargetPath + ".blhash")) return UpdatesFromHash();
+            if (File.Exists(SourcePath + ".blhash")) return UpdatesFromHash();
 
             // fall back to comparing file dates.
             return UpdatesFromDates();
@@ -66,34 +66,14 @@ namespace BoxLaunch
         {
             var sourceHashFi = new FileInfo(SourcePath + ".blhash");
             var targetHashFi = new FileInfo(TargetPath + ".blhash");
-            var hashRx = new Regex(@"^(?<file>[^:]+):\s(?<hash>.+)$");
-
-            string[] sourceLines;
-            using (var sr = new StreamReader(sourceHashFi.FullName))
-            {
-                var contents = sr.ReadToEnd();
-                sourceLines = contents.Split(Environment.NewLine.ToArray(), StringSplitOptions.RemoveEmptyEntries);
-            }
-
-            string[] targetLines;
-            using (var sr = new StreamReader(targetHashFi.FullName))
-            {
-                var contents = sr.ReadToEnd();
-                targetLines = contents.Split(Environment.NewLine.ToArray(), StringSplitOptions.RemoveEmptyEntries);
-            }
-
-            var sourceHashes = sourceLines.ToDictionary(
-                line => hashRx.Match(line).Groups["file"].Value, 
-                line => hashRx.Match(line).Groups["hash"].Value);
-            
-            var targetHashes = targetLines.ToDictionary(
-                line => hashRx.Match(line).Groups["file"].Value, 
-                line => hashRx.Match(line).Groups["hash"].Value);
+            var sourceHashCache = new HashCache(sourceHashFi);
+            var targetHashCache = new HashCache(targetHashFi);
 
             var updates = new List<UpdateItem>();
-            
+
             var buildUpdateItem = new Func<string, UpdateItem>(
-                fileName => {
+                fileName =>
+                {
                     var source = new FileInfo(SourcePath + fileName);
                     return new UpdateItem
                                {
@@ -103,32 +83,30 @@ namespace BoxLaunch
                                };
                 });
 
-            foreach (var sourceHash in sourceHashes)
+            foreach (var fileHash in sourceHashCache.Differences(targetHashCache))
             {
-                if (string.IsNullOrEmpty(sourceHash.Key)) continue;
-                if (!targetHashes.ContainsKey(sourceHash.Key))
-                {
-                    // Target does not have a hash.
-                    updates.Add(buildUpdateItem(sourceHash.Key));
-                    continue;
-                }
-                if (sourceHash.Value != targetHashes[sourceHash.Key])
-                {
-                    // Hashes do not match.
-                    updates.Add(buildUpdateItem(sourceHash.Key));
-                    continue;
-                }
-                if (!File.Exists(TargetPath + sourceHash.Key))
-                {
-                    // Target is missing a file.
-                    updates.Add(buildUpdateItem(sourceHash.Key));
-                    continue;
-                }
+                updates.Add(buildUpdateItem(fileHash.FileName));
             }
             // If we've got any updates at all, we should also re-download the hash.
             if (updates.Count > 0) updates.Add(buildUpdateItem(".blhash"));
-            return updates;
-        }        
+            return AddMissingFiles(updates);
+        }
+
+        private List<UpdateItem> AddMissingFiles(List<UpdateItem> list)
+        {
+            var folderContentsQuery = new GetFolderContentsQuery { Folder = SourceDir };
+
+            foreach (var sourceFile in folderContentsQuery.Execute())
+            {
+                var targetFile = new FileInfo(TargetPath + sourceFile.Name);
+
+                if (!targetFile.Exists && list.All(ui => ui.Source.Name != sourceFile.Name))
+                {
+                    list.Add(new UpdateItem { Source = sourceFile, Target = targetFile, FileSize = sourceFile.Length });
+                }
+            }
+            return list;
+        }
 
         private List<UpdateItem> UpdatesFromDates()
         {
@@ -139,36 +117,13 @@ namespace BoxLaunch
             {
                 var targetFile = new FileInfo(TargetPath + sourceFile.Name);
 
-                if (!targetFile.Exists || sourceFile.LastWriteTime != targetFile.LastWriteTime)
+                if (sourceFile.LastWriteTime != targetFile.LastWriteTime)
                 {
                     updates.Add(new UpdateItem { Source = sourceFile, Target = targetFile, FileSize = sourceFile.Length });
                 }
             }
-            return updates;
-        }
-
-        private static Dictionary<int, List<UpdateItem>> SplitUpdates(int splitCount, IEnumerable<UpdateItem> updates)
-        {
-            var splitUpdates = new Dictionary<int, List<UpdateItem>>(splitCount);
-            int x;
-            for (x = 0; x < splitCount; x++)
-            {
-                splitUpdates[x] = new List<UpdateItem>();
-            }
-
-            x = 0;
-            foreach (var update in updates.OrderByDescending(ui => ui.FileSize))
-            {
-                splitUpdates[x % splitCount].Add(update);
-                x += 1;
-            }
-
-            for (x = 0; x < splitCount; x++)
-            {
-                splitUpdates[x] = splitUpdates[x].OrderBy(a => Guid.NewGuid()).ToList();
-            }
-            return splitUpdates;
-        }
+            return AddMissingFiles(updates);
+        }   
 
         private void UpdateProgressText(int ctop)
         {
@@ -177,7 +132,7 @@ namespace BoxLaunch
             lock (_consoleLock)
             {
                 Console.SetCursorPosition(0, ctop + ProgressLine);
-                Console.Write(progressText.SpaceRight() );
+                Console.Write(progressText.SpaceRight());
             }
         }
 
@@ -190,7 +145,7 @@ namespace BoxLaunch
                 decimal.Round(updateSize / BytesToMegaBytes, 2),
                 progressPct.ProgressBar(25, '#')
                 );
-        }       
+        }
 
         public bool Execute()
         {
@@ -203,7 +158,7 @@ namespace BoxLaunch
             _completed = 0M;
             _updateSize = updates.Sum(x => x.FileSize);
 
-            if (_updateSize == 0M)
+            if (updates.Count == 0)
             {
                 Console.WriteLine("Target is up to date...");
                 return true;
@@ -212,17 +167,18 @@ namespace BoxLaunch
 
             var startTime = DateTime.Now;
             var failure = false;
-            
+
             Console.CursorVisible = false;
-            var procCount = Environment.ProcessorCount;                        
+            var procCount = Math.Min(updates.Count, Environment.ProcessorCount);
             Console.WriteLine("Downloading current version using {0} threads...", procCount);
             var ctop = Console.CursorTop;
-            var splitUpdates = SplitUpdates(procCount, updates);
+            var splitUpdates = updates.OrderByDescending(ui => ui.FileSize).SplitList(procCount);
 
             Parallel.ForEach(
                 splitUpdates,
                 new ParallelOptions { MaxDegreeOfParallelism = procCount },
-                (list, state) => {
+                (list, state) =>
+                {
                     foreach (var update in list.Value)
                     {
                         var displayText = string.Format(
@@ -253,13 +209,13 @@ namespace BoxLaunch
                     lock (_consoleLock)
                     {
                         Console.SetCursorPosition(0, ctop + ThreadsStartAt + list.Key);
-                        Console.Write("{0}: Work Complete.".SpaceRight(), list.Key);
+                        Console.Write("{0}: Work Complete.".SpaceRight(), list.Key + 1);
                     }
                 });
 
             if (failure)
             {
-                Console.WriteLine();
+                Console.SetCursorPosition(0, ctop + ThreadsStartAt + procCount + 1);
                 Console.WriteLine("Update failed! Is this program already open elsewhere?");
                 Console.WriteLine("Press enter to try to launch anyway, or close this window to cancel opening.");
                 Console.WriteLine("Note that the program may not work properly if you choose to launch it.");
@@ -270,7 +226,7 @@ namespace BoxLaunch
 
             _completed = _updateSize;
             UpdateProgressText(ctop);
-            
+
             Console.SetCursorPosition(0, ctop + ThreadsStartAt + procCount + 1);
             var elapsedTime = Convert.ToDecimal(DateTime.Now.Subtract(startTime).TotalMilliseconds / 1000D);
             var completeText = string.Format(

@@ -54,29 +54,8 @@ namespace BoxLaunch
         {
             var sourceHashFi = new FileInfo(SourceDir.FullName + "\\.blhash");
             var targetHashFi = new FileInfo(TargetPath + ".blhash");
-            var hashRx = new Regex(@"(?<file>[^:]+):\s(?<hash>.+)");
-
-            string[] sourceLines;
-            using (var sr = new StreamReader(sourceHashFi.FullName))
-            {
-                var contents = sr.ReadToEnd();
-                sourceLines = contents.Split(Environment.NewLine.ToArray(), StringSplitOptions.RemoveEmptyEntries);
-            }            
-
-            string[] targetLines;
-            using (var sr = new StreamReader(targetHashFi.FullName))
-            {
-                var contents = sr.ReadToEnd();
-                targetLines = contents.Split(Environment.NewLine.ToArray(), StringSplitOptions.RemoveEmptyEntries);
-            }
-
-            var sourceHashes = sourceLines.ToDictionary(
-                line => hashRx.Match(line).Groups["file"].Value,
-                line => hashRx.Match(line).Groups["hash"].Value, StringComparer.OrdinalIgnoreCase);
-
-            var targetHashes = targetLines.ToDictionary(
-                line => hashRx.Match(line).Groups["file"].Value,
-                line => hashRx.Match(line).Groups["hash"].Value, StringComparer.OrdinalIgnoreCase);
+            var sourceHashCache = new HashCache(sourceHashFi);
+            var targetHashCache = new HashCache(targetHashFi);
 
             var updates = new List<UpdateItem>();
 
@@ -92,24 +71,16 @@ namespace BoxLaunch
                     };
                 });
 
-            var sourceHash = sourceHashes[SourceFileInfo.Name];
-            if (!targetHashes.ContainsKey(SourceFileInfo.Name))
+            if (sourceHashCache.HashMatches(targetHashCache, SourceFileInfo.Name))
             {
-                // Target does not have a hash.
                 updates.Add(buildUpdateItem(SourceFileInfo.Name));
                 updates.Add(buildUpdateItem(".blhash"));
-                return updates;
             }
-            if (sourceHash != targetHashes[SourceFileInfo.Name])
-            {
-                // Hashes do not match.
-                updates.Add(buildUpdateItem(SourceFileInfo.Name));
-                updates.Add(buildUpdateItem(".blhash"));
-                return updates;
-            }
+          
             if (!File.Exists(TargetPath + SourceFileInfo.Name))
             {
                 // Target is missing a file.
+                updates.Add(buildUpdateItem(SourceFileInfo.Name));
                 updates.Add(buildUpdateItem(".blhash"));
                 return updates;
             }
