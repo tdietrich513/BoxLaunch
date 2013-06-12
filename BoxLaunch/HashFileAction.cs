@@ -18,6 +18,7 @@ namespace BoxLaunch
             var tempFile = Path.GetTempFileName();
             var hasher = MD5.Create();
             var hfInfo = new FileInfo(dirInfo.FullName + "\\.blhash");
+            if (!hfInfo.Exists) hfInfo.Create().Dispose();
 
             Console.Write("\t hashing {0}...", fileInfo.FullName);
             var fileStart = DateTime.Now;
@@ -28,14 +29,23 @@ namespace BoxLaunch
             using (var sw = new StreamWriter(tempFile))
             {
                 string line;
+                var replacedline = false;
                 while ((line = sr.ReadLine()) != null)
                 {
-                    sw.Write(
-                        line.StartsWith(fileInfo.Name) 
-                            ? string.Format("{0}: {1}{2}", fileInfo.Name, hash, Environment.NewLine) 
-                            : line + Environment.NewLine
-                    );
+                    if (line.StartsWith(fileInfo.Name))
+                    {
+                        sw.Write(string.Format("{0}: {1}{2}", fileInfo.Name, hash, Environment.NewLine));
+                        replacedline = true;
+                    }
+                    else
+                    {
+                        sw.Write(line + Environment.NewLine);
+                    }                    
                 }                
+                if (!replacedline)
+                {
+                    sw.Write(string.Format("{0}: {1}{2}", fileInfo.Name, hash, Environment.NewLine));
+                }
             }
 
             hfInfo.Delete();
