@@ -43,7 +43,7 @@ namespace BoxLaunch
             updates.Add(new UpdateItem() {Source = SourceFileInfo, Target = new FileInfo(TargetPath + SourceFileInfo.Name), FileSize = SourceFileInfo.Length});
             if (File.Exists(SourceDir.FullName + "\\.blhash"))
             {
-                var sourceHashFi = new FileInfo(SourceFileInfo.Directory.FullName + "\\.blhash");
+                var sourceHashFi = new FileInfo(SourceDir.FullName + "\\.blhash");
                 var targetHashFi = new FileInfo(TargetPath + ".blhash");
                 updates.Add(new UpdateItem { Source = sourceHashFi, Target = targetHashFi, FileSize = sourceHashFi.Length});
             }

@@ -72,6 +72,7 @@
     <Compile Include="SyncAndRunCommand.cs" />
     <Compile Include="SyncCommand.cs" />
     <Compile Include="SyncDirectoriesAction.cs" />
+    <Compile Include="UpdateHashFileAction.cs" />
     <Compile Include="UpdateItem.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
