@@ -27,17 +27,20 @@ usage: BoxLaunch sync-and-run -s={SOURCE DIRECTORY} -t={TARGET DIRECTORY} -p={PR
 Downloads updates to a directory then launches an executable.
 
 Available Options:
+
   -s, --source=SOURCE DIRECTORY
                              The SOURCE DIRECTORY that contains the files to
                                be copied.
+                               
   -t, --target=TARGET DIRECTORY
                              The TARGET DIRECTORY that the files should be
                                copied to.
+                               
   -p, --program=PROGRAM      The PROGRAM to run once the directories are in
                                sync.
+                               
   -a, --arg=ARGUMENT         An ARGUMENT that should be passed to the
-                               executable.
-  -h, -?, --help             Show this message and exit.
+                               executable.                              
   
   
 sync
@@ -47,12 +50,15 @@ usage: BoxLaunch sync -s={SOURCE DIRECTORY} -t={TARGET DIRECTORY}
 Downloads updates to a directory.
 
 Available Options:
+
   -s, --source=SOURCE DIRECTORY
                              The SOURCE DIRECTORY that contains the files to
                                be copied.
+                               
   -t, --target=TARGET DIRECTORY
                              The TARGET DIRECTORY that the files should be
                                copied to.
+                               
                                
 hash
 ====
@@ -61,7 +67,9 @@ usage: BoxLaunch hash -d={DIRECTORY}
 Creates a hash cache for a directory.
 
 Available Options:
+
   -d, --directory=DIRECTORY  The DIRECTORY that needs to be hashed.
+  
   -f, --file=FILE            A FILE to hash.
   
 copy-and-run
@@ -71,8 +79,11 @@ usage: BoxLaunch copy-and-run -t={TARGET DIRECTORY} -p={PROGRAM}
 Downloads a single file program to a target directory then runs it.
 
 Available Options:
+
   -p, --program=PROGRAM      The PROGRAM to run once the directories are in
                                sync.
+                               
   -t, --target=TARGET DIRECTORY
                              The TARGET DIRECTORY that the files should be
                                copied to.
+                               
