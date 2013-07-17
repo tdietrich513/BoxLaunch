@@ -22,7 +22,7 @@ namespace BoxLaunch
                 args,
                 "copy-and-run",
                 "-s={SOURCE DIRECTORY} -t={TARGET DIRECTORY} -p={PROGRAM}",
-                "Downloads updates to a directory then launches an executable.");
+                "Downloads updates to a file then launches it.");
 
             if (extra == null) return;
 

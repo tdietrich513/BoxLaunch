@@ -12,12 +12,12 @@ namespace BoxLaunch
 
         public static void Main(string[] args)
         {
-            SubCommands = new Dictionary<string, Func<ICommand>>
-                              {
+            SubCommands = new Dictionary<string, Func<ICommand>> {
                                   { "sync-and-run", () => new SyncAndRunCommand() },
                                   { "sync", () => new SyncCommand() },
                                   { "hash", () => new HashCommand() },
-                                  { "copy-and-run", () => new CopyAndRunCommand() }
+                                  { "copy-and-run", () => new CopyAndRunCommand() },
+                                  { "help", () => new ProgramHelpCommand() }
                               };
 
 
@@ -25,30 +25,32 @@ namespace BoxLaunch
             var showVersion = false;
             var pauseAfterRunning = false;
 
-            var p = new OptionSet() {
+            var p = new OptionSet {
                 { "h|?|help", v => showHelp = v != null },
                 { "version", v => showVersion = v != null},
                 { "pause", v => pauseAfterRunning = v != null}
             };
             
             var extra = p.Parse(args);
-
-            if (extra.Count == 0) {
-                Console.WriteLine("Use 'BoxLaunch help' for usage.");
+        
+            if (showVersion) {
+                Console.WriteLine("BoxLaunch 1.0");
                 return;
             }
 
-            if (showVersion) {
-                Console.WriteLine("BoxLaunch 1.0");
+            if (extra.Count == 0) {
+                Console.WriteLine("See 'BoxLaunch help' for usage.");
                 return;
             }
 
             if (showHelp) {
                 extra.Add("--help");
             }
-
+            
+          
             if (!SubCommands.ContainsKey(extra[0]))
             {
+                if (args.Count() < 3) return;
                 var defaultCommand = new SyncAndRunCommand();
                 var translatedArgs = new List<string>()
                                          {

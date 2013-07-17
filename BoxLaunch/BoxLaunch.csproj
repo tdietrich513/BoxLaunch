@@ -67,6 +67,7 @@
     <Compile Include="ICommand.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="ProgramHelpCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RunExecutableAction.cs" />
     <Compile Include="SyncAndRunCommand.cs" />
