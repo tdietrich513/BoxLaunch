@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BoxLaunch.Actions
 {
-    public class SyncDirectoriesAction
+    public class SyncDirectoriesAction : IAction
     {
         private const decimal BytesToMegaBytes = 1048506M;
         private const decimal BytesToKiloBytes = 1024M;

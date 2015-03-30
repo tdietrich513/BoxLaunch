@@ -58,6 +58,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actions\CleanDirectoryAction.cs" />
+    <Compile Include="Actions\IAction.cs" />
+    <Compile Include="Commands\CleanDirectoryCommand.cs" />
     <Compile Include="Commands\CopyAndRunCommand.cs" />
     <Compile Include="Actions\CopyFileAction.cs" />
     <Compile Include="FileHash.cs" />

@@ -5,7 +5,7 @@ using System.IO;
 
 namespace BoxLaunch.Actions
 {
-    public class RunExecutableAction
+    public class RunExecutableAction : IAction
     {
         public string TargetPath { get; set; }
         public string ExecutableName { get; set; }
