@@ -58,21 +58,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CopyAndRunCommand.cs" />
-    <Compile Include="CopyFileAction.cs" />
+    <Compile Include="Commands\CopyAndRunCommand.cs" />
+    <Compile Include="Actions\CopyFileAction.cs" />
     <Compile Include="FileHash.cs" />
     <Compile Include="GetFolderContentsQuery.cs" />
     <Compile Include="HashCache.cs" />
-    <Compile Include="HashCommand.cs" />
-    <Compile Include="ICommand.cs" />
+    <Compile Include="Commands\HashCommand.cs" />
+    <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="ProgramHelpCommand.cs" />
+    <Compile Include="Commands\ProgramHelpCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RunExecutableAction.cs" />
-    <Compile Include="SyncAndRunCommand.cs" />
-    <Compile Include="SyncCommand.cs" />
-    <Compile Include="SyncDirectoriesAction.cs" />
+    <Compile Include="Actions\RunExecutableAction.cs" />
+    <Compile Include="Commands\SyncAndRunCommand.cs" />
+    <Compile Include="Commands\SyncCommand.cs" />
+    <Compile Include="Actions\SyncDirectoriesAction.cs" />
     <Compile Include="UpdateItem.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>

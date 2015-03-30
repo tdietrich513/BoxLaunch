@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using BoxLaunch.Commands;
 using NDesk.Options;
 
 namespace BoxLaunch
