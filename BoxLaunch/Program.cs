@@ -17,7 +17,9 @@ namespace BoxLaunch
                                   { "sync", () => new SyncCommand() },
                                   { "hash", () => new HashCommand() },
                                   { "copy-and-run", () => new CopyAndRunCommand() },
-                                  { "help", () => new ProgramHelpCommand() }
+                                  { "help", () => new ProgramHelpCommand() },
+                                  { "clean-directory", () => new CleanDirectoryCommand() },
+                                  { "run-program", () => new ExecuteProgramCommand() }
                               };
 
 
