@@ -63,6 +63,7 @@
     <Compile Include="Commands\CleanDirectoryCommand.cs" />
     <Compile Include="Commands\CopyAndRunCommand.cs" />
     <Compile Include="Actions\CopyFileAction.cs" />
+    <Compile Include="Commands\ExecuteProgramCommand.cs" />
     <Compile Include="FileHash.cs" />
     <Compile Include="GetFolderContentsQuery.cs" />
     <Compile Include="HashCache.cs" />
